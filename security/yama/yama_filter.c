@@ -142,24 +142,26 @@ int yama_get_op_to_flag(unsigned long op, unsigned long *ret)
 }
 
 int yama_op_value_to_flag(unsigned long op, unsigned long value,
-			  unsigned long *ret)
+			  unsigned long *rvalue)
 {
-	int r = -EINVAL;
+	int ret = -EINVAL;
 	unsigned long f = 0;
 
 	switch (op) {
 	case PR_YAMA_GET_MOD_HARDEN:
 		if (value > 2)
-			return r;
+			return ret;
 		f = (value == 1) ? YAMA_MOD_HARDEN :
 			((value == 2) ? YAMA_MOD_HARDEN_STRICT : 0);
 		break;
-	if (f > 0) {
-		r = 0;
-		*ret = f;
 	}
 
-	return r;
+	if (f > 0) {
+		ret = 0;
+		*rvalue = f;
+	}
+
+	return ret;
 }
 
 int yama_filter_validate_flags(unsigned long flags)
@@ -186,7 +188,7 @@ int yama_chk_filter_ok(const struct yama_filter *filter, int op, int flag)
 }
 */
 
-static inline struct yama_filter *get_yama_filter(struct yama_filter *filter)
+static struct yama_filter *get_yama_filter(struct yama_filter *filter)
 {
 	if (atomic_inc_not_zero(&filter->refcount))
 		return filter;
@@ -194,7 +196,7 @@ static inline struct yama_filter *get_yama_filter(struct yama_filter *filter)
 	return NULL;
 }
 
-static inline void put_yama_filter(struct yama_filter *filter, bool *reclaim)
+static void put_yama_filter(struct yama_filter *filter, bool *reclaim)
 {
 	if (!filter || !atomic_dec_and_test(&filter->refcount))
 		return;
