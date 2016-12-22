@@ -36,6 +36,27 @@ void yama_tasks_clean(void)
 	return destroy_yama_tasks_hash();
 }
 
+/* Returns NULL if it can't find a matching filter */
+static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
+						    unsigned long op)
+{
+	int err = 0;
+	struct yama_filter *old;
+	struct yama_filter *new;
+
+	old = get_yama_filter_of_task(yama_tsk);
+	if (old)
+		ret = yama_filter_get_op_flag(op);
+	if (old && yama_filter_match_extend(old, value))
+		return old;
+
+	new = lookup_yama_filter((u8) value);
+
+	if (old)
+		put_yama_filter_of_task(yama_tsk, false);
+
+	return new;
+}
 
 /* caller have to do put_yama_filter_of_task() */
 static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,

@@ -436,25 +436,3 @@ void put_yama_filter_of_task(struct yama_task *yama_tsk, bool reclaim)
 	if (reclaim && remove)
 		schedule_work(&yama_reclaim_filters_work);
 }
-
-/* Returns NULL if it can't find a matching filter */
-static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk;
-						    unsigned long op)
-{
-	int err = 0;
-	struct yama_filter *old;
-	struct yama_filter *new;
-
-	old = get_yama_filter_of_task(yama_tsk);
-	if (old)
-		ret = yama_filter_get_op_flag(op);
-	if (old && yama_filter_match_extend(old, value))
-		return old;
-
-	new = lookup_yama_filter((u8) value);
-
-	if (old)
-		put_yama_filter_of_task(yama_tsk, false);
-
-	return new;
-}
