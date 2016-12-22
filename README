@@ -1,1 +1,35 @@
-yama
+YAMA: collect system-wide and **per process context** DAC security options.
+
+These settings should be inherited by children created by fork(2) and
+clone(2), and preserved across execve(2)
+
+
+1) PR_YAMA_SET_MOD_HARDEN
+   Only processes with CAP_SYS_MODULE will be allowed to *automatically*
+   load kernel modules.
+
+   prctl(PR_YAMA_OPTS, PR_YAMA_SET_MOD_HARDEN, 1, 0, 0);
+   prctl(PR_YAMA_OPTS, PR_YAMA_GET_MOD_HARDEN, 0, 0, 0);
+
+   Origin: grsecurity
+
+
+2) PR_YAMA_SET_PERF_HARDEN
+
+   To fix: https://lkml.org/lkml/2016/7/27/305
+
+   prctl(PR_YAMA_OPTS, PR_YAMA_SET_PERF_HARDEN, 1, 0, 0);
+
+   Origin: grsecurity
+
+
+3) PR_YAMA_SET_HIDE_PID
+
+   This option controls who can access the information in /proc/[pid]
+   directories. The options is per process.
+
+   /proc/[pid] directories belonging to other users become invisible, we
+   fail with -ENOENT error
+
+   prctl(PR_YAMA_OPTS, PR_YAMA_SET_HIDE_PID, 1, 0, 0);
+
