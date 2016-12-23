@@ -96,7 +96,6 @@ bool yama_filter_flags_are_set(struct yama_filter *filter,
 			       unsigned long flags)
 {
 	return (filter->flags & (flags & YAMA_OPTS_ALL)) != 0;
-
 }
 
 int yama_filter_get_op_flag(struct yama_filter *filter, unsigned long op)
@@ -236,7 +235,7 @@ struct yama_filter *lookup_yama_filter(u8 match)
 		if (atomic_read(&f->refcount) == 0)
 			continue;
 
-		if (yama_filter_flags_are_set(f, match)) {
+		if (yama_filter_flag_match(f, match)) {
 			found = get_yama_filter(f);
 			break;
 		}

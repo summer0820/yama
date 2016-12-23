@@ -38,24 +38,23 @@ void yama_tasks_clean(void)
 
 /* Returns NULL if it can't find a matching filter */
 static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
-						    unsigned long op)
+						    unsigned long op,
+						    unsigned long value)
 {
-	int err = 0;
-	struct yama_filter *old;
-	struct yama_filter *new;
+	int ret = 0;
+	struct yama_filter *old = NULL;
 
 	old = get_yama_filter_of_task(yama_tsk);
-	if (old)
-		ret = yama_filter_get_op_flag(op);
-	if (old && yama_filter_match_extend(old, value))
-		return old;
+	if (!old)
+		return lookup_yama_filter((u8) value);
 
-	new = lookup_yama_filter((u8) value);
-
-	if (old)
+	ret = yama_filter_get_op_flag(old, op);
+	if (ret <= 0) {
 		put_yama_filter_of_task(yama_tsk, false);
+		return NULL;
+	}
 
-	return new;
+	return old;
 }
 
 /* caller have to do put_yama_filter_of_task() */
@@ -121,7 +120,7 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 	if (IS_ERR(ytask))
 		return PTR_ERR(ytask);
 
-	filter = give_me_yama_filter(ytask, YAMA_MOD_HARDEN);
+	filter = give_me_yama_filter(ytask, YAMA_GET_MOD_HARDEN);
 	if (IS_ERR(filter)) {
 		ret = PTR_ERR(filter);
 		goto out;
