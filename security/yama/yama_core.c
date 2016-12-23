@@ -46,7 +46,7 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 
 	old = get_yama_filter_of_task(yama_tsk);
 	if (!old)
-		return lookup_yama_filter((u8) value);
+		return NULL;
 
 	ret = yama_filter_get_op_flag(old, op);
 	if (ret <= 0) {
@@ -59,21 +59,26 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 
 /* caller have to do put_yama_filter_of_task() */
 static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
-					       unsigned long op)
+					       unsigned long op,
+					       unsigned long value)
 {
 	int err = 0;
 	struct yama_filter *old;
 	struct yama_filter *new = NULL;
 
-	old = get_matching_task_filter(yama_tsk, op);
+	old = get_matching_task_filter(yama_tsk, op, value);
 	if (old)
 		return old;
+
+	new = lookup_yama_filter((u8) value);
+	if (new)
+		goto link;
 
 	new = init_yama_filter((u8) op);
 	if (IS_ERR(new))
 		return new;
 
-	/* Still not linked */
+	/* TODO: link me here ** Still not linked */
 	atomic_inc(&new->refcount);
 	return new;
 }
@@ -93,14 +98,12 @@ static struct yama_task *give_me_yama_task(struct task_struct *tsk)
 
 	/* Mark it as active */
 	ret = insert_yama_task(ytask);
-	if (ret)
-		goto err;
+	if (ret) {
+		kfree(ytask);
+		return ERR_PTR(ret);
+	}
 
 	return ytask;
-
-err:
-	kfree(ytask);
-	return ERR_PTR(ret);
 }
 
 static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
