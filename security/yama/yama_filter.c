@@ -98,6 +98,15 @@ bool yama_filter_flags_are_set(struct yama_filter *filter,
 	return (filter->flags & (flags & YAMA_OPTS_ALL)) != 0;
 }
 
+/* Returns true if flags are not set but other flags are set */
+bool yama_filter_others_are_set(struct yama_filter *filter,
+				unsigned long flags)
+{
+	unsigned long m = flags & YAMA_OPTS_ALL;
+
+	return (filter && filter->flags != 0 && (filter->flags & m) == 0);
+}
+
 int yama_filter_get_op_flag(struct yama_filter *filter, unsigned long op)
 {
 	int ret = -EINVAL;
@@ -112,35 +121,8 @@ int yama_filter_get_op_flag(struct yama_filter *filter, unsigned long op)
 	return ret;
 }
 
-/* Returns true if flags are not set but other flags are set */
-bool yama_filter_others_are_set(struct yama_filter *filter,
-				unsigned long flags)
-{
-	unsigned long m = flags & YAMA_OPTS_ALL;
-
-	return (filter && filter->flags != 0 && (filter->flags & m) == 0);
-}
-
-int yama_get_op_to_flag(unsigned long op, unsigned long *ret)
-{
-	int r = -EINVAL;
-	unsigned long f = 0;
-
-	switch (op) {
-	case PR_YAMA_GET_MOD_HARDEN:
-		f = YAMA_GET_MOD_HARDEN;
-		r = 0;
-		break;
-	}
-
-	if (!r)
-		*ret = f;
-
-	return r;
-}
-
-int yama_op_value_to_flag(unsigned long op, unsigned long value,
-			  unsigned long *rvalue)
+int yama_filter_op_to_flag(unsigned long op, unsigned long value,
+			   unsigned long *flag)
 {
 	int ret = -EINVAL;
 	unsigned long f = 0;
@@ -156,7 +138,7 @@ int yama_op_value_to_flag(unsigned long op, unsigned long value,
 	}
 
 	if (!ret)
-		*rvalue = f;
+		*flag = f;
 
 	return ret;
 }

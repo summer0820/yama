@@ -111,14 +111,11 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 	int ret;
 	struct yama_task *ytask;
 	struct yama_filter *filter;
+	unsigned long flag = 0;
 
-	ret = yama_op_value_to_flag(
-	/*
-	ret = yama_filter_validate_flags(value);
+	ret = yama_filter_op_to_flag(PR_YAMA_SET_MOD_HARDEN, value, &flag);
 	if (ret < 0)
 		return ret;
-	*/
-
 
 	/* Get Yama task */
 	ytask = give_me_yama_task(tsk);
