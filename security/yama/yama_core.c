@@ -76,7 +76,7 @@ static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
 
 	new = lookup_yama_filter((u8) flag);
 	if (new)
-		goto link;
+		goto out;
 
 	new = init_yama_filter((u8) flag);
 	if (IS_ERR(new))
