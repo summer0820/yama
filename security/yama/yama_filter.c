@@ -103,7 +103,7 @@ int yama_filter_get_op_flag(struct yama_filter *filter, unsigned long op)
 	int ret = -EINVAL;
 
 	switch (op) {
-	case YAMA_GET_MOD_HARDEN:
+	case PR_YAMA_GET_MOD_HARDEN:
 		ret = (filter->flags & YAMA_MOD_HARDEN) ? 1 :
 			((filter->flags & YAMA_MOD_HARDEN_STRICT) ? 2 : 0);
 		break;
@@ -129,13 +129,12 @@ int yama_get_op_to_flag(unsigned long op, unsigned long *ret)
 	switch (op) {
 	case PR_YAMA_GET_MOD_HARDEN:
 		f = YAMA_GET_MOD_HARDEN;
+		r = 0;
 		break;
 	}
 
-	if (f > 0) {
-		r = 0;
+	if (!r)
 		*ret = f;
-	}
 
 	return r;
 }
@@ -147,27 +146,20 @@ int yama_op_value_to_flag(unsigned long op, unsigned long value,
 	unsigned long f = 0;
 
 	switch (op) {
-	case PR_YAMA_GET_MOD_HARDEN:
+	case PR_YAMA_SET_MOD_HARDEN:
 		if (value > 2)
 			return ret;
 		f = (value == 1) ? YAMA_MOD_HARDEN :
 			((value == 2) ? YAMA_MOD_HARDEN_STRICT : 0);
+		ret = 0;
 		break;
 	}
 
-	if (f > 0) {
-		ret = 0;
+	if (!ret)
 		*rvalue = f;
-	}
 
 	return ret;
 }
-
-int yama_filter_validate_flags(unsigned long flags)
-{
-	return (flags & ~YAMA_OPTS_ALL) ? -EINVAL : 0;
-}
-
 
 /*
 int yama_chk_filter_ok(const struct yama_filter *filter, int op, int flag)
@@ -289,17 +281,11 @@ int yama_task_is_op_set(struct yama_task *yama_tsk, unsigned long op)
 	int ret = 0;
 	struct yama_filter *filter;
 
-	/*
-	ret = yama_filter_validate_flags(op);
-	if (ret < 0)
-		return ret;
-	*/
-
 	filter = get_yama_filter_of_task(yama_tsk);
 	if (filter)
 		ret = yama_filter_get_op_flag(filter, op);
-
 	put_yama_filter_of_task(yama_tsk, false);
+
 	return ret;
 }
 

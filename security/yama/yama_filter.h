@@ -15,8 +15,6 @@
  *
  */
 
-/* Internal YAMA_GET_* flags */
-#define YAMA_GET_MOD_HARDEN		1
 
 /* Internal YAMA flags */
 #define YAMA_MOD_HARDEN			0x00000001
@@ -35,7 +33,6 @@ bool yama_filter_match(struct yama_filter *filter, unsigned long flags);
 /* Returns true if extend match */
 bool yama_filter_extend_match(struct yama_filter *filter, unsigned long flags);
 
-int yama_filter_validate_flags(unsigned long flags);
 int yama_op_to_flags(unsigned long flags, unsigned long *ret);
 int yama_task_is_op_set(struct yama_task *yama_tsk, unsigned long op);
 

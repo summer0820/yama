@@ -74,7 +74,7 @@ static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
 	if (new)
 		goto link;
 
-	new = init_yama_filter((u8) op);
+	new = init_yama_filter((u8) value);
 	if (IS_ERR(new))
 		return new;
 
@@ -112,17 +112,20 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 	struct yama_task *ytask;
 	struct yama_filter *filter;
 
-	if (value > 2)
+	ret = yama_op_value_to_flag(
 	/*
 	ret = yama_filter_validate_flags(value);
 	if (ret < 0)
 		return ret;
 	*/
 
+
+	/* Get Yama task */
 	ytask = give_me_yama_task(tsk);
 	if (IS_ERR(ytask))
 		return PTR_ERR(ytask);
 
+	/* Get Yama filter */
 	filter = give_me_yama_filter(ytask, YAMA_GET_MOD_HARDEN);
 	if (IS_ERR(filter)) {
 		ret = PTR_ERR(filter);
@@ -149,18 +152,13 @@ out:
 static int yama_get_op_value(struct task_struct *tsk, unsigned long arg)
 {
 	int ret;
-	unsigned long flag = 0;
 	struct yama_task *ytask;
-
-	ret = yama_op_to_flag(arg, &flag);
-	if (ret < 0)
-		return ret;
 
 	ytask = get_yama_task(tsk);
 	if (!ytask)
 		return -EINVAL;
 
-	ret = yama_task_is_op_set(ytask, flag);
+	ret = yama_task_is_op_set(ytask, arg);
 	put_yama_task(ytask);
 
 	return ret;
