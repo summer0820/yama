@@ -15,7 +15,10 @@
  *
  */
 
-/* Internal YAMA flags */
+/*
+ * Internal YAMA flags
+ * Always order flags by less restrictive to more restrictive ones.
+ */
 #define YAMA_MOD_HARDEN			0x00000001
 #define YAMA_MOD_HARDEN_STRICT		0x00000002
 

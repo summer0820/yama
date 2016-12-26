@@ -38,8 +38,7 @@ void yama_tasks_clean(void)
 
 /* Returns NULL if it can't find a matching filter */
 static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
-						    unsigned long op,
-						    unsigned long value)
+						    unsigned long op)
 {
 	int ret = 0;
 	struct yama_filter *old = NULL;
@@ -49,7 +48,7 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 		return NULL;
 
 	ret = yama_filter_get_op_flag(old, op);
-	if (ret <= 0) {
+	if (ret < 0) {
 		put_yama_filter_of_task(yama_tsk, false);
 		return NULL;
 	}
@@ -57,35 +56,47 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 	return old;
 }
 
-/* caller have to do put_yama_filter_of_task() */
+/* Caller have to do put_yama_filter_of_task() */
 static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
 					       unsigned long op,
-					       unsigned long value)
+					       unsigned long flag)
 {
-	int err = 0;
-	struct yama_filter *old;
+	int ret = 0;
+	struct yama_filter *old = NULL;
 	struct yama_filter *new = NULL;
 
-	old = get_matching_task_filter(yama_tsk, op, value);
-	if (old)
-		return old;
+	old = get_matching_task_filter(yama_tsk, op);
+	if (old) {
+		ret = yama_filter_access(old, op, flag);
+		if (ret < 0)
+			put_yama_filter_of_task(yama_tsk, false);
 
-	new = lookup_yama_filter((u8) value);
+		goto out;
+	}
+
+	new = lookup_yama_filter((u8) flag);
 	if (new)
 		goto link;
 
-	new = init_yama_filter((u8) value);
+	new = init_yama_filter((u8) flag);
 	if (IS_ERR(new))
 		return new;
 
 	/* TODO: link me here ** Still not linked */
 	atomic_inc(&new->refcount);
 	return new;
+
+out:
+	if (ret < 0)
+		new = ERR_PTR(ret);
+
+	return new;
 }
 
 /* On success, callers have to do put_yama_task() */
 static struct yama_task *give_me_yama_task(struct task_struct *tsk)
 {
+	int ret;
 	struct yama_task *ytask;
 
 	ytask = get_yama_task(tsk);
@@ -123,7 +134,7 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 		return PTR_ERR(ytask);
 
 	/* Get Yama filter */
-	filter = give_me_yama_filter(ytask, YAMA_GET_MOD_HARDEN);
+	filter = give_me_yama_filter(ytask, PR_YAMA_GET_MOD_HARDEN, flag);
 	if (IS_ERR(filter)) {
 		ret = PTR_ERR(filter);
 		goto out;

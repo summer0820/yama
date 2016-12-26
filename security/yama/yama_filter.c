@@ -143,23 +143,34 @@ int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 	return ret;
 }
 
-/*
-int yama_chk_filter_ok(const struct yama_filter *filter, int op, int flag)
+int yama_filter_access(const struct yama_filter *filter,
+		       unsigned long op, unsigned long flag)
 {
+	int value;
 	int ret = -EACCES;
 
 	if (filter == NULL)
 		return 0;
 
-	if (op != YAMA_MOD_HARDEN)
+	value = yama_filter_get_op_flag(filter, op);
+	if (value < 0)
+		return value;
+
+	/* We can't undo flags */
+	if (flag == 0 && value > 0)
 		return ret;
 
-	if (!filter_is_set(filter, YAMA_MOD_HARDEN))
-		return 0;
+	switch (op) {
+	case PR_YAMA_GET_MOD_HARDEN:
+		if (value == 2 && flag != YAMA_MOD_HARDEN_STRICT)
+			return ret;
+
+		ret = 0;
+		break;
+	}
 
 	return ret;
 }
-*/
 
 static struct yama_filter *get_yama_filter(struct yama_filter *filter)
 {
