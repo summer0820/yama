@@ -113,6 +113,7 @@ int yama_filter_get_op_flag(struct yama_filter *filter, unsigned long op)
 
 	switch (op) {
 	case PR_YAMA_GET_MOD_HARDEN:
+	case PR_YAMA_SET_MOD_HARDEN:
 		ret = (filter->flags & YAMA_MOD_HARDEN) ? 1 :
 			((filter->flags & YAMA_MOD_HARDEN_STRICT) ? 2 : 0);
 		break;
@@ -150,7 +151,7 @@ int yama_filter_access(const struct yama_filter *filter,
 	int ret = -EACCES;
 
 	if (filter == NULL)
-		return 0;
+		return -EACCES;
 
 	current = yama_filter_get_op_flag(filter, op);
 	if (current < 0)

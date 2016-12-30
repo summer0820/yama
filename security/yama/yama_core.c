@@ -134,7 +134,7 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 		return PTR_ERR(ytask);
 
 	/* Get Yama filter */
-	filter = give_me_yama_filter(ytask, PR_YAMA_GET_MOD_HARDEN, flag);
+	filter = give_me_yama_filter(ytask, PR_YAMA_SET_MOD_HARDEN, flag);
 	if (IS_ERR(filter)) {
 		ret = PTR_ERR(filter);
 		goto out;
