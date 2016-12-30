@@ -158,7 +158,7 @@ int yama_filter_access(const struct yama_filter *filter,
 
 	/* We can't undo flags */
 	if (flag == 0 && value > 0)
-		return ret;
+		return -EACCES;
 
 	switch (op) {
 	case PR_YAMA_GET_MOD_HARDEN:
@@ -266,7 +266,7 @@ static void reclaim_yama_filters(struct work_struct *work)
 }
 
 /*
- * negative values means an error, 0 means not set otherwise the
+ * negative values mean an error, 0 means not set otherwise the
  * appropriate value.
  */
 int yama_task_is_op_set(struct yama_task *yama_tsk, unsigned long op)
