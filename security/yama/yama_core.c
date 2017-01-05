@@ -114,6 +114,8 @@ static struct yama_task *give_me_yama_task(struct task_struct *tsk)
 		return ERR_PTR(ret);
 	}
 
+	atomic_inc(&ytask->active);
+
 	return ytask;
 }
 
@@ -128,31 +130,12 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 	if (ret < 0)
 		return ret;
 
-	/* Get Yama task */
 	ytask = give_me_yama_task(tsk);
 	if (IS_ERR(ytask))
 		return PTR_ERR(ytask);
 
-	/* Get Yama filter */
-	filter = give_me_yama_filter(ytask, PR_YAMA_SET_MOD_HARDEN, flag);
-	if (IS_ERR(filter)) {
-		ret = PTR_ERR(filter);
-		goto out;
-	}
+	ret = yama_set_filter(ytask, PR_YAMA_SET_MOD_HARDEN, flag, value)
 
-	insert_yama_filter(filter);
-
-	/* TODO: ignore errors of yama_task already exists */
-	ret = insert_yama_task(ytask);
-	if (ret)
-		goto err_mem;
-
-	put_yama_filter_of_task(
-	put_yama_task(ytask);
-
-	return 0;
-
-out:
 	put_yama_task(ytask);
 	return ret;
 }
