@@ -56,14 +56,23 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 	return old;
 }
 
-/* Caller have to do put_yama_filter_of_task() */
-static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
-					       unsigned long op,
-					       unsigned long flag)
+static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
+			   unsigned long flag, unsigned long value)
 {
 	int ret = 0;
-	struct yama_filter *old = NULL;
+	struct yama_filter *old;
 	struct yama_filter *new = NULL;
+
+	old = get_yama_filter_of_task(yama_tsk);
+	if (old) {
+		ret = yama_filter_access(old, op, flag);
+		if (ret < 0) {
+			put_yama_filter_of_task(yama_tsk, false);
+			return ret;
+		}
+
+		ret = yama_filter_calculate_new(old, op, flag, new);
+	}
 
 	old = get_matching_task_filter(yama_tsk, op);
 	if (old) {
@@ -86,11 +95,7 @@ static struct yama_filter *give_me_yama_filter(struct yama_tsk *yama_tsk,
 	atomic_inc(&new->refcount);
 	return new;
 
-out:
-	if (ret < 0)
-		new = ERR_PTR(ret);
-
-	return new;
+	return ret;
 }
 
 /* On success, callers have to do put_yama_task() */
