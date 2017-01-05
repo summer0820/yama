@@ -86,9 +86,7 @@ static DECLARE_WORK(yama_reclaim_filters_work, reclaim_yama_filters);
 static inline bool yama_filter_flag_match(struct yama_filter *filter,
 					  unsigned long flag)
 {
-	unsigned long m = flag & YAMA_OPTS_ALL;
-
-	return (filter && (filter->flags == m));
+	return (filter->flags == (flag & YAMA_OPTS_ALL));
 }
 
 /* Returns true if flags are set */
@@ -146,14 +144,24 @@ int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 	return ret;
 }
 
+int yama_filter_calculate_new(struct yama_filter *filter,
+			      unsigned long op, unsigned long flag,
+			      unsigned long value)
+{
+	int ret = -EINVAL;
+
+	return ret;
+}
+
 int yama_filter_access(const struct yama_filter *filter,
 		       unsigned long op, unsigned long flag)
 {
 	int val;
 	int ret = -EACCES;
 
+	/* Return Invalid slot for now, TODO: fixme */
 	if (filter == NULL)
-		return -EACCES;
+		return -EBADSLT;
 
 	val = yama_filter_get_op_flag(filter, op);
 	if (val < 0)
@@ -176,7 +184,7 @@ int yama_filter_access(const struct yama_filter *filter,
 	return ret;
 }
 
-static struct yama_filter *get_yama_filter(struct yama_filter *filter)
+static inline struct yama_filter *get_yama_filter_unlocked(struct yama_filter *filter)
 {
 	if (atomic_inc_not_zero(&filter->refcount))
 		return filter;
@@ -225,7 +233,7 @@ struct yama_filter *lookup_yama_filter(u8 match)
 			continue;
 
 		if (yama_filter_flag_match(f, match)) {
-			found = get_yama_filter(f);
+			found = get_yama_filter_unlocked(f);
 			break;
 		}
 	}
@@ -395,7 +403,7 @@ struct yama_filter *get_yama_filter_of_task(struct yama_task *yama_tsk)
 	rcu_read_lock();
 	filter = rcu_dereference(yama_tsk->filter);
 	if (filter)
-		filter = get_yama_filter(filter);
+		filter = get_yama_filter_unlocked(filter);
 	rcu_read_unlock();
 
 	return filter;
