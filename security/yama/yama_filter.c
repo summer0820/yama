@@ -83,8 +83,8 @@ static DEFINE_SPINLOCK(yama_filters_lock);
 static void reclaim_yama_filters(struct work_struct *work);
 static DECLARE_WORK(yama_reclaim_filters_work, reclaim_yama_filters);
 
-bool yama_filter_flag_match(struct yama_filter *filter,
-			    unsigned long flag)
+static inline bool yama_filter_flag_match(struct yama_filter *filter,
+					  unsigned long flag)
 {
 	unsigned long m = flag & YAMA_OPTS_ALL;
 
