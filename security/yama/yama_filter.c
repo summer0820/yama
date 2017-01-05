@@ -130,15 +130,17 @@ int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 
 	switch (op) {
 	case PR_YAMA_SET_MOD_HARDEN:
-		if (value > 2)
-			return ret;
-		f = (value == 1) ? YAMA_MOD_HARDEN :
-			((value == 2) ? YAMA_MOD_HARDEN_STRICT : 0);
-		ret = 0;
+		if (value == 1) {
+			f = YAMA_MOD_HARDEN;
+			ret = 0;
+		} else if (value == 2) {
+			f = YAMA_MOD_HARDEN_STRICT;
+			ret = 0;
+		}
 		break;
 	}
 
-	if (!ret)
+	if (ret == 0)
 		*flag = f;
 
 	return ret;
