@@ -209,7 +209,7 @@ int yama_filter_access(const struct yama_filter *filter,
 	return ret;
 }
 
-static inline struct yama_filter *get_yama_filter_unlocked(struct yama_filter *filter)
+static inline struct yama_filter *get_yama_filter(struct yama_filter *filter)
 {
 	if (atomic_inc_not_zero(&filter->refcount))
 		return filter;
@@ -258,7 +258,7 @@ struct yama_filter *lookup_yama_filter(u8 match)
 			continue;
 
 		if (yama_filter_flag_match(f, match)) {
-			found = get_yama_filter_unlocked(f);
+			found = get_yama_filter(f);
 			break;
 		}
 	}
@@ -428,7 +428,7 @@ struct yama_filter *get_yama_filter_of_task(struct yama_task *yama_tsk)
 	rcu_read_lock();
 	filter = rcu_dereference(yama_tsk->filter);
 	if (filter)
-		filter = get_yama_filter_unlocked(filter);
+		filter = get_yama_filter(filter);
 	rcu_read_unlock();
 
 	return filter;
