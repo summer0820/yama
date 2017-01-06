@@ -74,7 +74,7 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 		if (ret < 0)
 			goto out;
 
-		/* Ignore if flags did not change */
+		/* Nothing to do if flags did not change */
 		if (yama_filter_flags_match(old, new_flags)) {
 			ret = 0;
 			goto out;
