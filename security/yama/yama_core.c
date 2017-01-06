@@ -59,19 +59,26 @@ static struct yama_filter *get_matching_task_filter(struct yama_task *yama_tsk,
 static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 			   unsigned long flag, unsigned long value)
 {
-	int ret = 0;
+	int ret = -EINVAL;
+	unsigned long new_flags = 0;
+	struct yama_filter *new;
 	struct yama_filter *old;
-	struct yama_filter *new = NULL;
 
 	old = get_yama_filter_of_task(yama_tsk);
 	if (old) {
 		ret = yama_filter_access(old, op, flag);
-		if (ret < 0) {
-			put_yama_filter_of_task(yama_tsk, false);
-			return ret;
-		}
+		if (ret < 0)
+			goto out;
 
-		ret = yama_filter_calculate_new(old, op, flag, new);
+		ret = yama_filter_calculate_new(old, op, flag, &new_flags);
+		if (ret < 0)
+			goto out;
+
+		/* Ignore if flags did not change */
+		if (yama_filter_flags_match(old, new_flags)) {
+			ret = 0;
+			goto out;
+		}
 	}
 
 	old = get_matching_task_filter(yama_tsk, op);
@@ -95,6 +102,8 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 	atomic_inc(&new->refcount);
 	return new;
 
+out:
+	put_yama_filter(old);
 	return ret;
 }
 
