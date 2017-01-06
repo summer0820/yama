@@ -30,10 +30,7 @@ struct yama_filter;
 struct yama_task;
 
 /* Returns true if extact match */
-bool yama_filter_match(struct yama_filter *filter, unsigned long flags);
-
-/* Returns true if extend match */
-bool yama_filter_extend_match(struct yama_filter *filter, unsigned long flags);
+bool yama_filter_flags_match(struct yama_filter *filter, unsigned long flags);
 
 int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 			   unsigned long *rvalue);
