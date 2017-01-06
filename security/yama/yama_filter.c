@@ -83,15 +83,14 @@ static DEFINE_SPINLOCK(yama_filters_lock);
 static void reclaim_yama_filters(struct work_struct *work);
 static DECLARE_WORK(yama_reclaim_filters_work, reclaim_yama_filters);
 
-static inline bool yama_filter_flag_match(struct yama_filter *filter,
-					  unsigned long flag)
+bool yama_filter_flags_match(struct yama_filter *filter, unsigned long flags)
 {
-	return (filter->flags == (flag & YAMA_OPTS_ALL));
+	return (filter->flags == (flags & YAMA_OPTS_ALL));
 }
 
 /* Returns true if flags are set */
-bool yama_filter_flags_are_set(struct yama_filter *filter,
-			       unsigned long flags)
+static inline bool yama_filter_flags_are_set(struct yama_filter *filter,
+					     unsigned long flags)
 {
 	return (filter->flags & (flags & YAMA_OPTS_ALL)) != 0;
 }
@@ -124,31 +123,57 @@ int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 			   unsigned long *flag)
 {
 	int ret = -EINVAL;
-	unsigned long f = 0;
+	unsigned long f = ~0U;
 
 	switch (op) {
 	case PR_YAMA_SET_MOD_HARDEN:
-		if (value == 1) {
-			f = YAMA_MOD_HARDEN;
+		f = (value == 1) ? YAMA_MOD_HARDEN :
+			((value == 2) ? YAMA_MOD_HARDEN_STRICT : 0);
+		break;
+	}
+
+	if (f != ~0U) {
+		*flag = f;
+		ret = 0;
+	}
+
+	return ret;
+}
+
+int yama_filter_calculate_flags(struct yama_filter *filter,
+				unsigned long op, unsigned long flag,
+				unsigned long *result)
+{
+	int val;
+	int ret = -EINVAL;
+	unsigned long new;
+
+	if (filter == NULL)
+		return -EBADSLT;
+
+	new = filter->flags;
+
+	/* Special case ignore it */
+	if (flag == 0) {
+		ret = 0;
+		goto out;
+	}
+
+	switch (op) {
+	case PR_YAMA_SET_MOD_HARDEN:
+		if (flag == YAMA_MOD_HARDEN_STRICT) {
+			new = (new & ~YAMA_MOD_HARDEN) | YAMA_MOD_HARDEN_STRICT;
 			ret = 0;
-		} else if (value == 2) {
-			f = YAMA_MOD_HARDEN_STRICT;
+		} else if (flag == YAMA_MOD_HARDEN) {
+			new |= YAMA_MOD_HARDEN;
 			ret = 0;
 		}
 		break;
 	}
 
-	if (ret == 0)
-		*flag = f;
-
-	return ret;
-}
-
-int yama_filter_calculate_new(struct yama_filter *filter,
-			      unsigned long op, unsigned long flag,
-			      unsigned long value)
-{
-	int ret = -EINVAL;
+out:
+	if (!ret)
+		*result = new;
 
 	return ret;
 }
