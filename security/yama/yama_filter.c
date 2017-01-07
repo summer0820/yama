@@ -42,7 +42,7 @@ struct yama_filter {
 
 /* Currently we are always working on current task */
 struct yama_task {
-	atomic_t active;	/* active is set only when linked into hash */
+	atomic_t usage;		/* Usage is set only when linked into hash */
 
 	struct rhash_head node;
 	unsigned long key;
@@ -62,7 +62,7 @@ static inline int cmp_yama_task(struct rhashtable_compare_arg *arg,
 	const struct yama_task *ytask = obj;
 
 	return ytask->filter == NULL ||
-		atomic_read(&ytask->active) == 0 || ytask->key != key;
+		atomic_read(&ytask->usage) == 0 || ytask->key != key;
 }
 
 /* TODO: optimize me */
@@ -342,12 +342,12 @@ int insert_yama_task(struct yama_task *yama_tsk)
 {
 	int ret;
 
-	atomic_inc(&yama_tsk->active);
+	atomic_inc(&yama_tsk->usage);
 	ret = rhashtable_lookup_insert_key(&yama_tasks_table,
 					   yama_tsk->task, &yama_tsk->node,
 					   yama_tasks_params);
 	if (ret)
-		atomic_dec(&yama_tsk->active);
+		atomic_dec(&yama_tsk->usage);
 
 	return ret;
 }
@@ -365,7 +365,7 @@ struct yama_task *get_yama_task(struct task_struct *tsk)
 	rcu_read_lock();
 	ytask = lookup_yama_task_unlocked(tsk);
 	if (ytask)
-		atomic_inc(&ytask->active);
+		atomic_inc(&ytask->usage);
 	rcu_read_unlock();
 
 	printk("%s:%d   %p  =>  %p", __func__, __LINE__, tsk, ytask);
@@ -374,7 +374,7 @@ struct yama_task *get_yama_task(struct task_struct *tsk)
 
 void put_yama_task(struct yama_task *yama_tsk)
 {
-	if (yama_tsk && atomic_dec_and_test(&yama_tsk->active))
+	if (yama_tsk && atomic_dec_and_test(&yama_tsk->usage))
 		remove_yama_task(yama_tsk);
 }
 
@@ -384,7 +384,7 @@ static void reclaim_yama_task(struct work_struct *work)
 	struct yama_task *ytask = container_of(work, struct yama_task,
 					       clean_work);
 
-	WARN_ON(atomic_read(&ytask->active) != 0);
+	WARN_ON(atomic_read(&ytask->usage) != 0);
 
 	rhashtable_remove_fast(&yama_tasks_table, &ytask->node,
 			       yama_tasks_params);
@@ -402,7 +402,7 @@ struct yama_task *init_yama_task(struct task_struct *task,
 
 	ytask->task = task;
 	ytask->filter = filter;
-	atomic_set(&ytask->active, 0);
+	atomic_set(&ytask->usage, 0);
 	INIT_WORK(&ytask->clean_work, reclaim_yama_task);
 
 	return ytask;

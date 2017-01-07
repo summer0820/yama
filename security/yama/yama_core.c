@@ -119,7 +119,7 @@ static struct yama_task *give_me_yama_task(struct task_struct *tsk)
 		return ERR_PTR(ret);
 	}
 
-	atomic_inc(&ytask->active);
+	atomic_inc(&ytask->usage);
 
 	return ytask;
 }
