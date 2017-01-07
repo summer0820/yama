@@ -124,14 +124,15 @@ static struct yama_task *give_me_yama_task(struct task_struct *tsk)
 	return ytask;
 }
 
-static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
+static int yama_set_op_value(struct task_struct *tsk,
+			     unsigned long op, unsigned long value)
 {
 	int ret;
 	struct yama_task *ytask;
 	struct yama_filter *filter;
 	unsigned long flag = 0;
 
-	ret = yama_filter_op_to_flag(PR_YAMA_SET_MOD_HARDEN, value, &flag);
+	ret = yama_filter_op_to_flag(op, value, &flag);
 	if (ret < 0)
 		return ret;
 
@@ -139,7 +140,7 @@ static int yama_set_mod_harden(struct task_struct *tsk, unsigned long value)
 	if (IS_ERR(ytask))
 		return PTR_ERR(ytask);
 
-	ret = yama_set_filter(ytask, PR_YAMA_SET_MOD_HARDEN, flag, value)
+	ret = yama_set_filter(ytask, op, flag, value)
 
 	put_yama_task(ytask);
 	return ret;
@@ -211,7 +212,7 @@ int yama_prctl_opts(struct task_struct *tsk, unsigned long arg2,
 
 	switch (arg2) {
 	case PR_YAMA_SET_MOD_HARDEN:
-		ret = yama_set_mod_harden(tsk, arg3);
+		ret = yama_set_op_value(tsk, PR_YAMA_SET_MOD_HARDEN, arg3);
 		break;
 	case PR_YAMA_GET_MOD_HARDEN:
 		ret = yama_get_op_value(tsk, PR_YAMA_GET_MOD_HARDEN);
