@@ -352,7 +352,7 @@ int insert_yama_task(struct yama_task *yama_tsk)
 	return ret;
 }
 
-static void remove_yama_task(struct yama_task *yama_tsk)
+static void __put_yama_task(struct yama_task *yama_tsk)
 {
 	put_yama_filter_of_task(yama_tsk, true);
 	schedule_work(&yama_tsk->clean_work);
@@ -375,7 +375,7 @@ struct yama_task *get_yama_task(struct task_struct *tsk)
 void put_yama_task(struct yama_task *yama_tsk)
 {
 	if (yama_tsk && atomic_dec_and_test(&yama_tsk->usage))
-		remove_yama_task(yama_tsk);
+		__put_yama_task(yama_tsk);
 }
 
 /* Reclaim dead yama tasks */
