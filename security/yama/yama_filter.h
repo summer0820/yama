@@ -36,8 +36,8 @@ int yama_filter_op_to_flag(unsigned long op, unsigned long value,
 			   unsigned long *rvalue);
 int yama_task_is_op_set(struct yama_task *yama_tsk, unsigned long op);
 
-struct yama_filter *init_yama_filter(u8 data);
-struct yama_filter *lookup_yama_filter(u8 data);
+struct yama_filter *init_yama_filter(unsigned long flags);
+struct yama_filter *lookup_yama_filter(unsigned long flags);
 void insert_yama_filter(struct yama_filter *filter);
 void remove_yama_filter(struct yama_filter *filter);
 

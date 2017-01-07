@@ -81,7 +81,7 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 		}
 	}
 
-	new = lookup_yama_filter((u8) flag);
+	new = lookup_yama_filter(new_flags);
 	if (new)
 		goto out;
 

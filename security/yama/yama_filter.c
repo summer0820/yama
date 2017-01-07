@@ -226,7 +226,7 @@ static void put_yama_filter(struct yama_filter *filter, bool *reclaim)
 		*reclaim = true;
 }
 
-struct yama_filter *init_yama_filter(u8 data)
+struct yama_filter *init_yama_filter(unsigned long flags)
 {
 	struct yama_filter *filter;
 
@@ -247,7 +247,7 @@ struct yama_filter *init_yama_filter(u8 data)
 }
 
 /* Takes a ref on filter, callers should put_yama_filter() after */
-struct yama_filter *lookup_yama_filter(u8 match)
+struct yama_filter *lookup_yama_filter(unsigned long flags)
 {
 	struct yama_filter *f;
 	struct yama_filter *found = NULL;
@@ -257,7 +257,7 @@ struct yama_filter *lookup_yama_filter(u8 match)
 		if (atomic_read(&f->refcount) == 0)
 			continue;
 
-		if (yama_filter_flag_match(f, match)) {
+		if (yama_filter_flag_match(f, flags)) {
 			found = get_yama_filter(f);
 			break;
 		}
