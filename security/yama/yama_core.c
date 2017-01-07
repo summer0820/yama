@@ -146,7 +146,7 @@ static int yama_set_op_value(struct task_struct *tsk,
 	return ret;
 }
 
-static int yama_get_op_value(struct task_struct *tsk, unsigned long arg)
+static int yama_get_op_value(struct task_struct *tsk, unsigned long op)
 {
 	int ret;
 	struct yama_task *ytask;
@@ -155,7 +155,7 @@ static int yama_get_op_value(struct task_struct *tsk, unsigned long arg)
 	if (!ytask)
 		return -EINVAL;
 
-	ret = yama_task_is_op_set(ytask, arg);
+	ret = yama_task_is_op_set(ytask, op);
 	put_yama_task(ytask);
 
 	return ret;
