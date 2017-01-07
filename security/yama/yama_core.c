@@ -178,17 +178,17 @@ int yama_copy_task_filter(struct task_struct *tsk)
 	ytask = init_yama_task(tsk, filter);
 	if (IS_ERR(ytask)) {
 		ret = PTR_ERR(ytask);
+		put_yama_filter_of_task(yparent, false);
 		goto out;
 	}
 
 	ret = insert_yama_task(ytask);
-	if (ret)
+	if (ret) {
 		kfree(ytask);
+		put_yama_filter_of_task(yparent, false);
+	}
 
 out:
-	if (ret != 0)
-		put_yama_filter_of_task(yparent, false);
-
 	put_yama_task(yparent);
 	return ret;
 }
