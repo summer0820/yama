@@ -81,15 +81,6 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 		}
 	}
 
-	old = get_matching_task_filter(yama_tsk, op);
-	if (old) {
-		ret = yama_filter_access(old, op, flag);
-		if (ret < 0)
-			put_yama_filter_of_task(yama_tsk, false);
-
-		goto out;
-	}
-
 	new = lookup_yama_filter((u8) flag);
 	if (new)
 		goto out;
@@ -195,7 +186,9 @@ int yama_copy_task_filter(struct task_struct *tsk)
 		kfree(ytask);
 
 out:
-	put_yama_filter_of_task(yparent, false);
+	if (ret != 0)
+		put_yama_filter_of_task(yparent, false);
+
 	put_yama_task(yparent);
 	return ret;
 }
