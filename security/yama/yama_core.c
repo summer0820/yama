@@ -60,6 +60,7 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 			   unsigned long flag, unsigned long value)
 {
 	int ret = -EINVAL;
+	bool rm_filter = false;
 	unsigned long new_flags = 0;
 	struct yama_filter *new;
 	struct yama_filter *old;
@@ -94,7 +95,8 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 	return new;
 
 out:
-	put_yama_filter(old);
+	put_yama_filter(old, &rm_filter);
+	delayed_reclaim_yama_filters(true, rm_filter);
 	return ret;
 }
 

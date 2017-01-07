@@ -80,8 +80,8 @@ static const struct rhashtable_params yama_tasks_params = {
 static LIST_HEAD(yama_filters);
 static DEFINE_SPINLOCK(yama_filters_lock);
 
-static void reclaim_yama_filters(struct work_struct *work);
-static DECLARE_WORK(yama_reclaim_filters_work, reclaim_yama_filters);
+static void __reclaim_yama_filters(struct work_struct *work);
+static DECLARE_WORK(yama_reclaim_filters_work, __reclaim_yama_filters);
 
 bool yama_filter_flags_match(struct yama_filter *filter, unsigned long flags)
 {
@@ -286,7 +286,7 @@ void insert_yama_filter(struct yama_filter *filter)
 }*/
 
 /* Reclaim dead entries from yama filters */
-static void reclaim_yama_filters(struct work_struct *work)
+static void __reclaim_yama_filters(struct work_struct *work)
 {
 	struct yama_filter *filter;
 
@@ -300,6 +300,12 @@ static void reclaim_yama_filters(struct work_struct *work)
 	}
 	rcu_read_unlock();
 	spin_unlock(&yama_filters_lock);
+}
+
+void delayed_reclaim_yama_filters(bool reclaim, bool remove)
+{
+	if (reclaim && remove)
+		schedule_work(&yama_reclaim_filters_work);
 }
 
 /*
@@ -448,6 +454,5 @@ void put_yama_filter_of_task(struct yama_task *yama_tsk, bool reclaim)
 		put_yama_filter(filter, &remove);
 	rcu_read_unlock();
 
-	if (reclaim && remove)
-		schedule_work(&yama_reclaim_filters_work);
+	delayed_reclaim_yama_filters(reclaim, remove);
 }

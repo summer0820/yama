@@ -41,6 +41,8 @@ struct yama_filter *lookup_yama_filter(unsigned long flags);
 void insert_yama_filter(struct yama_filter *filter);
 void remove_yama_filter(struct yama_filter *filter);
 
+void delayed_reclaim_yama_filters(bool reclaim, bool remove);
+
 int init_yama_tasks_hash(void);
 void destroy_yama_tasks_hash(void);
 
