@@ -238,7 +238,7 @@ struct yama_filter *init_yama_filter(unsigned long flags)
 	if (filter == NULL)
 		return ERR_PTR(-ENOMEM);
 
-	filter->flags = data;
+	filter->flags = flags;
 	atomic_set(&filter->refcount, 0);
 
 	return filter;
