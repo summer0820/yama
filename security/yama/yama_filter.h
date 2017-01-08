@@ -56,3 +56,5 @@ int insert_yama_task(struct yama_task *yama_tsk);
 
 struct yama_filter *get_yama_filter_of_task(struct yama_task *yama_tsk);
 void put_yama_filter_of_task(struct yama_task *yama_tsk, bool reclaim);
+
+int update_yama_task_filter(struct yama_task *yama_tsk, unsigned long flags);

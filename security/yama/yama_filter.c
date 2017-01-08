@@ -35,12 +35,11 @@
  */
 struct yama_filter {
 	atomic_t refcount;
-	u8 flags;		/* flags or operations */
+	unsigned long flags;	/* flags or operations */
 	struct list_head node;
 	struct rcu_head rcu;
 };
 
-/* Currently we are always working on current task */
 struct yama_task {
 	atomic_t usage;		/* Usage is set only when linked into hash */
 
@@ -455,4 +454,27 @@ void put_yama_filter_of_task(struct yama_task *yama_tsk, bool reclaim)
 	rcu_read_unlock();
 
 	delayed_reclaim_yama_filters(reclaim, remove);
+}
+
+int update_yama_task_filter(struct yama_task *yama_tsk, unsigned long flags)
+{
+	int ret;
+	struct yama_filter *new;
+
+	new = lookup_yama_filter(flags);
+	if (!new) {
+		new = init_yama_filter(flags);
+		if (IS_ERR(new)) {
+			ret = PTR_ERR(new);
+			goto out;
+		}
+		insert_yama_filter(new);
+	}
+
+	WARN_ON(atomic_read(&new->refcount) < 1);
+
+	rcu_assign_pointer(yama_tsk->filter, new);
+	ret = 0;
+out:
+	return ret;
 }

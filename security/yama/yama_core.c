@@ -60,7 +60,8 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 			   unsigned long flag, unsigned long value)
 {
 	int ret = -EINVAL;
-	bool rm_filter = false;
+	bool rm_new = false;
+	bool rm_old = false;
 	unsigned long new_flags = 0;
 	struct yama_filter *new;
 	struct yama_filter *old;
@@ -80,23 +81,15 @@ static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
 			ret = 0;
 			goto out;
 		}
-	}
+	} else
+		new_flags = flag;
 
-	new = lookup_yama_filter(new_flags);
-	if (new)
-		goto out;
-
-	new = init_yama_filter((u8) flag);
-	if (IS_ERR(new))
-		return new;
-
-	/* TODO: link me here ** Still not linked */
-	atomic_inc(&new->refcount);
-	return new;
+	ret = update_yama_task_filter(yama_tsk, new_flags)
 
 out:
-	put_yama_filter(old, &rm_filter);
-	delayed_reclaim_yama_filters(true, rm_filter);
+	put_yama_filter(old, &rm_old);
+	delayed_reclaim_yama_filters(true, rm_old);
+
 	return ret;
 }
 
