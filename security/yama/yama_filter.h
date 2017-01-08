@@ -61,6 +61,9 @@ struct yama_task *init_yama_task(struct task_struct *task,
 struct yama_task *lookup_yama_task(struct task_struct *tsk);
 int insert_yama_task(struct yama_task *yama_tsk);
 
+struct yama_filter *get_yama_filter(struct yama_filter *filter);
+void put_yama_filter(struct yama_filter *filter, bool *reclaim);
+
 struct yama_filter *get_yama_filter_of_task(struct yama_task *yama_tsk);
 void put_yama_filter_of_task(struct yama_task *yama_tsk, bool reclaim);
 

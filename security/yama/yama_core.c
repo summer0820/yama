@@ -64,7 +64,7 @@ static int yama_set_filter(struct yama_task *yama_tsk, unsigned long op,
 	} else
 		new_flags = flag;
 
-	ret = update_yama_task_filter(yama_tsk, new_flags)
+	ret = update_yama_task_filter(yama_tsk, new_flags);
 
 out:
 	put_yama_filter(old, &rm_old);
@@ -115,7 +115,7 @@ static int yama_set_op_value(struct task_struct *tsk,
 	if (IS_ERR(ytask))
 		return PTR_ERR(ytask);
 
-	ret = yama_set_filter(ytask, op, flag, value)
+	ret = yama_set_filter(ytask, op, flag, value);
 
 	put_yama_task(ytask);
 	return ret;

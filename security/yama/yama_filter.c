@@ -207,7 +207,7 @@ int yama_filter_access(struct yama_filter *filter,
 	return ret;
 }
 
-static inline struct yama_filter *get_yama_filter(struct yama_filter *filter)
+struct yama_filter *get_yama_filter(struct yama_filter *filter)
 {
 	if (atomic_inc_not_zero(&filter->refcount))
 		return filter;
@@ -215,7 +215,7 @@ static inline struct yama_filter *get_yama_filter(struct yama_filter *filter)
 	return NULL;
 }
 
-static void put_yama_filter(struct yama_filter *filter, bool *reclaim)
+void put_yama_filter(struct yama_filter *filter, bool *reclaim)
 {
 	if (!filter || !atomic_dec_and_test(&filter->refcount))
 		return;
