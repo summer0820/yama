@@ -52,7 +52,7 @@ static int yama_set_filter(struct yama_task *yama_tsk, unsigned long op,
 		if (ret < 0)
 			goto out;
 
-		ret = yama_filter_calculate_new(old, op, flag, &new_flags);
+		ret = yama_filter_calculate_flags(old, op, flag, &new_flags);
 		if (ret < 0)
 			goto out;
 
