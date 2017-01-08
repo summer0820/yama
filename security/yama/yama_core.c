@@ -40,10 +40,8 @@ static int yama_set_filter(struct yama_task *yama_tsk, unsigned long op,
 			   unsigned long flag, unsigned long value)
 {
 	int ret = -EINVAL;
-	bool rm_new = false;
 	bool rm_old = false;
 	unsigned long new_flags = 0;
-	struct yama_filter *new;
 	struct yama_filter *old;
 
 	old = get_yama_filter_of_task(yama_tsk);
