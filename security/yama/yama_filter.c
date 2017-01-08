@@ -143,7 +143,6 @@ int yama_filter_calculate_flags(struct yama_filter *filter,
 				unsigned long op, unsigned long flag,
 				unsigned long *result)
 {
-	int val;
 	int ret = -EINVAL;
 	unsigned long new;
 
