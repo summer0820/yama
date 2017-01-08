@@ -36,7 +36,7 @@ void yama_tasks_clean(void)
 	return destroy_yama_tasks_hash();
 }
 
-static int yama_set_filter(struct yama_tsk *yama_tsk, unsigned long op,
+static int yama_set_filter(struct yama_task *yama_tsk, unsigned long op,
 			   unsigned long flag, unsigned long value)
 {
 	int ret = -EINVAL;
