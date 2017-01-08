@@ -356,12 +356,6 @@ int insert_yama_task(struct yama_task *yama_tsk)
 	return ret;
 }
 
-static void __put_yama_task(struct yama_task *yama_tsk)
-{
-	put_yama_filter_of_task(yama_tsk, true);
-	schedule_work(&yama_tsk->clean_work);
-}
-
 struct yama_task *get_yama_task(struct task_struct *tsk)
 {
 	struct yama_task *ytask;
@@ -374,6 +368,12 @@ struct yama_task *get_yama_task(struct task_struct *tsk)
 
 	printk("%s:%d   %p  =>  %p", __func__, __LINE__, tsk, ytask);
 	return ytask;
+}
+
+static void __put_yama_task(struct yama_task *yama_tsk)
+{
+	put_yama_filter_of_task(yama_tsk, true);
+	schedule_work(&yama_tsk->clean_work);
 }
 
 void put_yama_task(struct yama_task *yama_tsk)
@@ -395,7 +395,7 @@ static void reclaim_yama_task(struct work_struct *work)
 	kfree(ytask);
 }
 
-struct yama_task *init_yama_task(struct task_struct *task,
+struct yama_task *init_yama_task(struct task_struct *tsk,
 				 struct yama_filter *filter)
 {
 	struct yama_task *ytask;
@@ -404,10 +404,36 @@ struct yama_task *init_yama_task(struct task_struct *task,
 	if (ytask == NULL)
 		return ERR_PTR(-ENOMEM);
 
-	ytask->task = task;
+	ytask->task = tsk;
 	ytask->filter = filter;
 	atomic_set(&ytask->usage, 0);
 	INIT_WORK(&ytask->clean_work, reclaim_yama_task);
+
+	return ytask;
+}
+
+/* On success, callers have to do put_yama_task() */
+struct yama_task *give_me_yama_task(struct task_struct *tsk)
+{
+	int ret;
+	struct yama_task *ytask;
+
+	ytask = get_yama_task(tsk);
+	if (ytask)
+		return ytask;
+
+	ytask = init_yama_task(tsk, NULL);
+	if (IS_ERR(ytask))
+		return ytask;
+
+	/* Mark it as active */
+	ret = insert_yama_task(ytask);
+	if (ret) {
+		kfree(ytask);
+		return ERR_PTR(ret);
+	}
+
+	atomic_inc(&ytask->usage);
 
 	return ytask;
 }

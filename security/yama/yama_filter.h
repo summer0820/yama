@@ -56,8 +56,9 @@ void destroy_yama_tasks_hash(void);
 struct yama_task *get_yama_task(struct task_struct *tsk);
 void put_yama_task(struct yama_task *yama_tsk);
 
-struct yama_task *init_yama_task(struct task_struct *task,
+struct yama_task *init_yama_task(struct task_struct *tsk,
 				 struct yama_filter *filter);
+struct yama_task *give_me_yama_task(struct task_struct *tsk);
 struct yama_task *lookup_yama_task(struct task_struct *tsk);
 int insert_yama_task(struct yama_task *yama_tsk);
 

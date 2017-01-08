@@ -71,38 +71,11 @@ out:
 	return ret;
 }
 
-/* On success, callers have to do put_yama_task() */
-static struct yama_task *give_me_yama_task(struct task_struct *tsk)
-{
-	int ret;
-	struct yama_task *ytask;
-
-	ytask = get_yama_task(tsk);
-	if (ytask)
-		return ytask;
-
-	ytask = init_yama_task(tsk, NULL);
-	if (IS_ERR(ytask))
-		return ytask;
-
-	/* Mark it as active */
-	ret = insert_yama_task(ytask);
-	if (ret) {
-		kfree(ytask);
-		return ERR_PTR(ret);
-	}
-
-	atomic_inc(&ytask->usage);
-
-	return ytask;
-}
-
 static int yama_set_op_value(struct task_struct *tsk,
 			     unsigned long op, unsigned long value)
 {
 	int ret;
 	struct yama_task *ytask;
-	struct yama_filter *filter;
 	unsigned long flag = 0;
 
 	ret = yama_filter_op_to_flag(op, value, &flag);
