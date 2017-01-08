@@ -29,6 +29,13 @@
 struct yama_filter;
 struct yama_task;
 
+int yama_filter_calculate_flags(struct yama_filter *filter,
+				unsigned long op, unsigned long flag,
+				unsigned long *result);
+
+int yama_filter_access(struct yama_filter *filter,
+		       unsigned long op, unsigned long flag);
+
 /* Returns true if extact match */
 bool yama_filter_flags_match(struct yama_filter *filter, unsigned long flags);
 
