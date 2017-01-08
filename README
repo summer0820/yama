@@ -6,10 +6,12 @@ clone(2), and preserved across execve(2)
 
 1) PR_YAMA_SET_MOD_HARDEN
    Only processes with CAP_SYS_MODULE will be allowed to *automatically*
-   load kernel modules.
+   load kernel modules in mode 1.
+
+   mode 2 loading modules is not allowed.
 
    prctl(PR_YAMA_OPTS, PR_YAMA_SET_MOD_HARDEN, 1, 0, 0);
-   prctl(PR_YAMA_OPTS, PR_YAMA_GET_MOD_HARDEN, 0, 0, 0);
+   prctl(PR_YAMA_OPTS, PR_YAMA_GET_MOD_HARDEN, 2, 0, 0);  /* Strict mode */
 
    Origin: grsecurity
 
@@ -26,10 +28,10 @@ clone(2), and preserved across execve(2)
 3) PR_YAMA_SET_HIDE_PID
 
    This option controls who can access the information in /proc/[pid]
-   directories. The options is per process.
+   directories. The options is per process. On fork it is inherited.
 
    /proc/[pid] directories belonging to other users become invisible, we
    fail with -ENOENT error
 
    prctl(PR_YAMA_OPTS, PR_YAMA_SET_HIDE_PID, 1, 0, 0);
-
+   same as hide_pid = 2 of procfs mount options
