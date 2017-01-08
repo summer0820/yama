@@ -11,21 +11,12 @@ clone(2), and preserved across execve(2)
    mode 2 loading modules is not allowed.
 
    prctl(PR_YAMA_OPTS, PR_YAMA_SET_MOD_HARDEN, 1, 0, 0);
-   prctl(PR_YAMA_OPTS, PR_YAMA_GET_MOD_HARDEN, 2, 0, 0);  /* Strict mode */
+   prctl(PR_YAMA_OPTS, PR_YAMA_SET_MOD_HARDEN, 2, 0, 0);  /* Strict mode */
 
    Origin: grsecurity
 
 
-2) PR_YAMA_SET_PERF_HARDEN
-
-   To fix: https://lkml.org/lkml/2016/7/27/305
-
-   prctl(PR_YAMA_OPTS, PR_YAMA_SET_PERF_HARDEN, 1, 0, 0);
-
-   Origin: grsecurity
-
-
-3) PR_YAMA_SET_HIDE_PID
+2) PR_YAMA_SET_HIDE_PID
 
    This option controls who can access the information in /proc/[pid]
    directories. The options is per process. On fork it is inherited.
@@ -35,3 +26,12 @@ clone(2), and preserved across execve(2)
 
    prctl(PR_YAMA_OPTS, PR_YAMA_SET_HIDE_PID, 1, 0, 0);
    same as hide_pid = 2 of procfs mount options
+
+
+2) PR_YAMA_SET_PERF_HARDEN
+
+   To fix: https://lkml.org/lkml/2016/7/27/305
+
+   prctl(PR_YAMA_OPTS, PR_YAMA_SET_PERF_HARDEN, 1, 0, 0);
+
+   Origin: grsecurity
