@@ -255,7 +255,7 @@ struct yama_filter *lookup_yama_filter(unsigned long flags)
 		if (atomic_read(&f->refcount) == 0)
 			continue;
 
-		if (yama_filter_flag_match(f, flags)) {
+		if (yama_filter_flags_match(f, flags)) {
 			found = get_yama_filter(f);
 			break;
 		}
