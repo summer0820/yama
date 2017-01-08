@@ -176,7 +176,7 @@ out:
 	return ret;
 }
 
-int yama_filter_access(const struct yama_filter *filter,
+int yama_filter_access(struct yama_filter *filter,
 		       unsigned long op, unsigned long flag)
 {
 	int val;
